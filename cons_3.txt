@@ -1,0 +1,91 @@
+
+
+
+*** cons(3)  *** 
+
+
+NAME
+          cons - console, clocks, process/process group ids, user,
+          null, reboot, etc.
+
+     SYNOPSIS
+          bind #c /dev
+
+          /dev/bintime
+          /dev/config
+          /dev/cons
+          /dev/consctl
+          /dev/cputime
+          /dev/drivers
+          /dev/hostdomain
+          /dev/hostowner
+          /dev/kmesg
+          /dev/kprint
+          /dev/null
+          /dev/osversion
+          /dev/pgrpid
+          /dev/pid
+          /dev/ppid
+          /dev/random
+          /dev/reboot
+          /dev/swap
+          /dev/sysname
+          /dev/sysstat
+          /dev/time
+          /dev/user
+          /dev/zero
+
+     DESCRIPTION
+          The console device serves a one-level directory giving
+          access to the console and miscellaneous information.
+
+          Reading the cons file returns characters typed on the key-
+          board.  Normally, characters are buffered to enable erase
+          and kill processing.  A control-U, `^U', typed at the key-
+          board kills the current input line (removes all characters
+          from the buffer of characters not yet read via cons), and a
+          backspace erases the previous non-kill, non-erase character
+          from the input buffer.  Killing and erasing only delete
+          characters back to, but not including, the last newline.
+          Characters typed at the keyboard actually produce 21-bit
+          runes (see utf(6)), but the runes are translated into the
+          variable-length UTF encoding (see utf(6)) before putting
+          them into the buffer.  A read(2) of length greater than zero
+          causes the process to wait until a newline or a `^D' ends
+          the buffer, and then returns as much of the buffer as the
+          argument to read allows, but only up to one complete line.
+
+          A terminating `^D' is not put into the buffer.  If part of
+          the line remains, the next read will return bytes from that
+          remainder and not part of any new line that has been typed
+          since.
+
+          If the string rawon has been written to the consctl file and
+          the file is still open, cons is in raw mode: characters are
+          not echoed as they are typed, backspace, `^U' and `^D' are
+          not treated specially, and characters are available to read
+          as soon as they are typed.  Ordinary mode is reentered when
+          rawoff is written to consctl or this file is closed.
+
+          A write (see read(2)) to cons causes the characters to be
+          printed on the console screen.
+
+          The osversion file contains a textual representation of the
+          operating system's version and parameters.  At the moment,
+          it contains one field: the 9P protocol version, currently
+          2000.
+
+          The config file contains a copy of the kernel configuration
+          file used to build the kernel.
+
+          ...  
+
+
+          SEE ALSO
+          draw(3), keyboard(6), authsrv(6), utf(6), swap(8)
+
+          SOURCE
+          /sys/src/9/port/devcons.c
+
+ 
+

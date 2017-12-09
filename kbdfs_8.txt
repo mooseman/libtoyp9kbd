@@ -1,0 +1,137 @@
+
+
+*** kbdfs(8)  *** 
+
+
+NAME
+          kbdfs - keyboard and console filesystem
+
+     SYNOPSIS
+          aux/kbdfs [ -Dd ] [ -s srv ] [ -m mntpnt ] [ filename ]
+
+          mount -b /srv/cons /dev
+          /dev/cons
+          /dev/consctl
+          /dev/kbd
+          /dev/kbdin
+          /dev/kbin
+          /dev/kbmap
+
+     DESCRIPTION
+          Started on boot(8), kbdfs translates raw keyboard scancodes
+          from /dev/scancode (see kbd(3)) and its kbin and kbdin file
+          and optionally reads console input from consfile to provide
+          initial keyboard and console input.
+
+          It serves a one-level directory containing the files cons,
+          consctl, kbd, kbdin, kbin and kbmap.
+
+          The -D flag enables a debug trace of 9p messages and -d pre-
+          vents kbdfs from making its memory private.
+
+          The -s option causes kbdfs to post its channel on /srv/srv.
+          On system startup, boot(8) sets this to cons. With the -m
+          option, kbdfs mounts itself on mntpnt (see bind(2)), other-
+          wise on /dev (the default).
+
+        Console
+          Reading the cons file returns characters typed on the con-
+          sole.  Normally, characters are buffered to enable erase and
+          kill processing. A control-U, `^U', typed at the keyboard
+          erases the current input line (removes all characters from
+          the buffer of characters not yet read via cons), and a back-
+          space erases the previous non-kill, non-erase character from
+          the input buffer.  The combination control-W, `^W', deletes
+          the input last word.  Killing and erasing only delete char-
+          acters back to, but not including, the last newline.  
+
+          Characters typed at the keyboard actually produce 16-bit runes
+          (see utf(6)), but the runes are translated into the
+          variable-length UTF encoding (see utf(6)) before putting
+          them into the buffer. A read(2) of a length greater than
+          zero causes the process to wait until a newline or a `^D'
+          ends the buffer, and then returns as much of the buffer as
+          the argument to read allows, but only up to one complete
+          line.  A terminating `^D' is not put into the buffer.  If
+          part of the line remains, the next read will return bytes
+          from that remainder and not part of any new line that has
+          been typed since.
+
+          If the string rawon has been written to the consctl file and
+          the file is still open, cons is in raw mode: characters are
+          not echoed as they are typed, backspace, `^U,' `^W' and `^D'
+          are not treated specially, and characters are available to
+          read as soon as they are typed.  Ordinary mode is reentered
+          when rawoff is written to consctl or this file is closed.
+
+          A write (see read(2)) to cons causes the characters to be
+          printed on the console screen.
+
+          When a filename is passed to kbdfs(8) as its last argument,
+          it reads and processes the characters from that file and
+          forwards them to the cons file with the same text processing
+          applied as on keyboard input.  This is used on serial con-
+          soles.
+
+        Keyboard
+          A read on the kbd file returns the character k, K or c fol-
+          lowed by a null terminated, variable-length, UTF encoded
+          string. The k message is send when a key is pressed down and
+          K when a key is released. The following string contains all
+          the keycodes of the keys that are currently pressed down in
+          unshifted form. This includes all keys that have a keyboard
+          mapping and modifier keys.  The string following the c mes-
+          sage contains the single character that would have been
+          returned on the cons file instead. The c message will be
+          resent at the keyboard repeat rate.  A single read(2) can
+          return multiple concatenated messages at once (delimited by
+          the null byte) or block when there are no messages queued.
+          Opening the kbd file disables input processing on the cons
+          file until it is closed again.
+
+          K, k and c messages can be written to kbdin and will for-
+          warded to the reader of cons or kbd.  Writing a r or R mes-
+          sage followed by a UTF encoded rune will simulate the press
+          or release of that particular rune.
+
+          Raw scancodes can be written to the kbin file for external
+          keyboard input (used for USB keyboards).
+
+        Keyboard map
+          Scancodes are mapped to Unicode characters with a number of
+          translation tables. These tables can be accessed with the
+          kbmap file.
+
+          Reads return the current contents of the map (kbmap). 
+          Each entry is one line containing three 11 character numeric 
+          fields, each followed by a space: a table number, an index 
+          into the table (scan code), and the decimal value of the 
+          corresponding Unicode character (0 if none).  
+          The table numbers are platform dependent; they typically 
+          distinguish between unshifted and shifted keys.  
+          The scan code values are hardware dependent and can vary 
+          from keyboard to keyboard.
+
+          Writes to the file change the map.  Lines written to the
+          file must contain three space-separated fields, representing
+          the table number, scan code index, and Unicode character.
+          Values are taken to be decimal unless they start with 0x
+          (hexadecimal) or 0 (octal).  The Unicode character can also
+          be represented as 'x where x gives the UTF-8 representation
+          of the character (see utf(6)), or as ^X to represent a con-
+          trol character.
+
+          SEE ALSO
+          cons(3), keyboard(6), utf(6), kbd(3)
+
+          FILES
+          /sys/lib/kbmap/*
+
+          SOURCE
+          /sys/src/cmd/aux/kbdfs
+
+
+
+
+
+

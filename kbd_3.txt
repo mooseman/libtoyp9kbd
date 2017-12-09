@@ -1,0 +1,41 @@
+
+
+
+***  kbd(3)  ***  
+
+NAME
+          kbd - pc keyboard driver
+
+     SYNOPSIS
+          bind -a #b /dev
+
+          /dev/scancode
+          /dev/leds
+
+     DESCRIPTION
+          The kbd device serves a one-level directory containing the
+          files scancode and leds.
+
+          Reading the scancode file returns the raw scancode stream as
+          it is emitted by the keyboard device without any transla-
+          tion. It is usually kbdfs(8) task to interpret the scancodes
+          and provide device independent keyboard input to programs.
+          The scancode file can be only opened once by the hostowner.
+
+          Writing a number to the write-only leds file changes the
+          status leds on the keyboard. the value of the number is the
+          addition of 1, 2 and 4 representing activated Scroll, Num
+          and Caps leds.
+
+     EXAMPLE
+          Set the Scroll and Caps leds:
+          echo 5 >/dev/leds
+
+     SEE ALSO
+          kbdfs(8)
+
+     SOURCE
+          /sys/src/9/pc/devkbd.c
+
+
+
